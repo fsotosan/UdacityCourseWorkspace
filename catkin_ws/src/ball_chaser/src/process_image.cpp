@@ -50,16 +50,18 @@ void process_image_callback(const sensor_msgs::Image img)
       }
     }
 
-    if (white_center>0) {
-      lin_x = 10.0;
-    }
-
-    if (white_left-white_right != 0)
-      ang_z = -3.0*(white_left-white_right)*3.14/img.step;
-    else if (white_center == 0) {
-      // Stop
+    if (white_left>white_right) {
+      // Turn left
+      ang_z = 1.57/16.0;
+    } else if (white_left<white_right) { 
+      // Turn right
+      ang_z = -1.57/16.0;
+    } else if (white_center > 0) {
+      // Straight
       ang_z = 0.0;
-      lin_x = 0.0;
+      lin_x = 5.0;
+    } else {
+      // Stop    
     }
 
     drive_robot(lin_x,ang_z);
@@ -77,7 +79,7 @@ int main(int argc, char** argv)
     client = n.serviceClient<ball_chaser::DriveToTarget>("/ball_chaser/command_robot");
 
     // Subscribe to /camera/rgb/image_raw topic to read the image data inside the process_image_callback function
-    ros::Subscriber sub1 = n.subscribe("/camera/rgb/image_raw", 10, process_image_callback);
+    ros::Subscriber sub1 = n.subscribe("/camera/rgb/image_raw", 1, process_image_callback);
 
     // Handle ROS communication events
     ros::spin();
